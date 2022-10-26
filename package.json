@@ -22,7 +22,7 @@
     "dev": "run-p server client",
     "client": "NODE_ENV=development webpack-dev-server --config ./webpack.config.cjs --mode development --devtool inline-source-map --hot",
     "server": "nodemon --experimental-modules --es-module-specifier-resolution=node ./index.js",
-    "start": "yarn run build && NODE_ENV=production DEBUG=tbg:* node --experimental-modules --es-module-specifier-resolution=node ./index.js",
+    "start": "yarn run build",
     "build": "NODE_ENV=production webpack --config ./webpack.config.cjs --mode production",
     "lint": "./node_modules/.bin/eslint \"**/*.js\" --ignore-pattern node_modules/ --ignore-pattern dist/ --fix",
     "generate-tot-imgs": "NODE_ENV=development DEBUG=tbg:* node ./scripts/loadThisOrThatImages && yarn lint"
