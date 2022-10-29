@@ -28,6 +28,13 @@ module.exports = (env, argv) => ({
         use: { loader: 'babel-loader' },
       },
       {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
         test: /\.css$/,
         use: ['style-loader', 'css-loader'],
       },
@@ -63,8 +70,8 @@ module.exports = (env, argv) => ({
     host: '0.0.0.0',
     historyApiFallback: true,
     proxy: {
-      '/api': 'http://localhost:8080',
-      '/socket.io': 'http://localhost:8080',
+      '/api': 'http://localhost:8000',
+      '/socket.io': 'http://localhost:8000',
     },
   },
   plugins: [

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
-import { getAQHIFromGovernment } from '../../api';
+import { getAQHIFromGovernment, login } from '../../api';
 
 import colors from '../../colors';
 import AirQualityInfo from '../AirQualityInfo';
@@ -27,6 +27,7 @@ function Home() {
 
   const getData = async () => {
     const data = await getAQHIFromGovernment(city);
+    await login('test1', 'test2');
 
     const { features } = data;
     features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));

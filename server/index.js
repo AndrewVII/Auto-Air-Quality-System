@@ -1,10 +1,10 @@
-require('dotenv').config({ path: `./.env.${process.env.NODE_ENV}` });
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import connectDB from './db/conn';
 
-const express = require('express');
-const cors = require('cors');
-// get MongoDB driver connection
-const mongoose = require('mongoose');
-const connectDB = require('./db/conn');
+dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -13,12 +13,18 @@ connectDB();
 
 app.use(cors());
 app.use(express.json());
-app.use(require('./routes/record'));
 
-// Global error handling
-app.use((err, _req, res) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+// Routes
+
+app.post('/api/auth/register', (req, res) => {
+  console.log('test');
+  return { success: true };
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body.params;
+  console.log(username, password);
+  return { success: true };
 });
 
 mongoose.connection.once('open', () => {
