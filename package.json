@@ -10,6 +10,8 @@
     "copy-webpack-plugin": "^11.0.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "mongodb": "^4.11.0",
+    "mongoose": "^6.7.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -22,8 +24,8 @@
   "scripts": {
     "dev": "yarn run client & yarn run server",
     "client": "NODE_ENV=development webpack-dev-server --config ./webpack.config.cjs --mode development --devtool inline-source-map --hot",
-    "server": "nodemon --experimental-modules --es-module-specifier-resolution=node ./index.js",
-    "start": "yarn run build && NODE_ENV=production DEBUG=tbg:* node --experimental-modules --es-module-specifier-resolution=node ./index.js",
+    "server": "nodemon --experimental-modules --es-module-specifier-resolution=node ./server/index.js",
+    "start": "yarn run build && NODE_ENV=production DEBUG=tbg:* node --experimental-modules --es-module-specifier-resolution=node ./server/index.js",
     "build": "NODE_ENV=production webpack --config ./webpack.config.cjs --mode production",
     "lint": "./node_modules/.bin/eslint \"**/*.js\" --ignore-pattern node_modules/ --ignore-pattern dist/ --fix",
     "generate-tot-imgs": "NODE_ENV=development DEBUG=tbg:* node ./scripts/loadThisOrThatImages && yarn lint"
