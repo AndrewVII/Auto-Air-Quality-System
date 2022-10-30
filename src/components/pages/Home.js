@@ -16,6 +16,11 @@ const styles = createUseStyles({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  error: {
+    marginTop: '5px',
+    color: colors.error,
+    fontSize: '16px',
+  },
 });
 
 function Home() {
@@ -24,12 +29,16 @@ function Home() {
   const [city, setCity] = useState('');
   const [airQualityData, setAirQualityData] = useState([]);
   const [location, setLocation] = useState('');
+  const [error, setError] = useState('');
 
   const getData = async () => {
     const data = await getAQHIFromGovernment(city);
-    await login('test1', 'test2');
-
     const { features } = data;
+    if (!features.length) {
+      setError(`${city} is not an available location.`);
+      return;
+    }
+    setError('');
     features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
 
     const graphData = features.map(feature => {
@@ -40,8 +49,6 @@ function Home() {
         AQHI: feature.properties.aqhi,
       };
     });
-
-    // graphData = graphData.slice(graphData.length - 10, graphData.length);
 
     setLocation(features[0].properties.location_name_en);
     setAirQualityData(graphData);
@@ -54,7 +61,8 @@ function Home() {
         <button type="submit" onClick={getData}>Get data for city</button>
       </div>
       <div>
-        {location && <AirQualityInfo airQualityData={airQualityData} location={location} />}
+        {error && <div className={classes.error}>{error}</div>}
+        {location && !error && <AirQualityInfo airQualityData={airQualityData} location={location} />}
       </div>
     </div>
   );

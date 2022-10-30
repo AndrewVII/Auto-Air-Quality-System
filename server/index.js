@@ -1,10 +1,12 @@
-import dotenv from 'dotenv';
+import '../config/config';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import MongoStore from 'connect-mongo';
+import session from 'express-session';
 import connectDB from './db/conn';
-
-dotenv.config({ path: `./.env.${process.env.NODE_ENV}` });
+import expressConfig from '../config/express.config';
+import AuthService from './services/auth/auth.service';
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -14,17 +16,39 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+expressConfig.store = MongoStore.create({ mongoUrl: process.env.DB_URI });
+const expressSession = session(expressConfig);
+app.use(expressSession);
 
-app.post('/api/auth/register', (req, res) => {
-  console.log('test');
-  return { success: true };
+// Routes
+app.post('/api/auth/register', async (req, res) => {
+  const { username, password } = req.body.params;
+  try {
+    const data = await AuthService.register({ username, password });
+    if (data.error) {
+      res.status(400).send(data);
+      return;
+    }
+    res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body.params;
-  console.log(username, password);
-  return { success: true };
+  try {
+    const data = await AuthService.login({ username, password });
+    if (data.error) {
+      res.status(400).send(data);
+      return;
+    }
+    res.status(200).send(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 mongoose.connection.once('open', () => {
