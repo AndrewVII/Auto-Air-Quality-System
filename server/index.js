@@ -4,6 +4,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
+import path from 'path';
 import connectDB from './db/conn';
 import expressConfig from '../config/express.config';
 import AuthService from './services/auth/auth.service';
@@ -24,6 +25,8 @@ app.use(expressSession);
 app.use('/static', express.static('dist'));
 app.use('*/js', express.static('dist'));
 app.use('*/txt', express.static('dist'));
+
+app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'dist/index.html')));
 
 // Routes
 app.post('/api/auth/register', async (req, res) => {
