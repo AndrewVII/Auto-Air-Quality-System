@@ -28,7 +28,9 @@
     "react-scripts": "5.0.1",
     "recharts": "^2.1.15",
     "web-vitals": "^2.1.0",
-    "webpack-node-externals": "^3.0.0"
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1"
   },
   "scripts": {
     "dev": "yarn run client & yarn run server",
@@ -72,7 +74,6 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "html-webpack-plugin": "^5.5.0",
-    "nodemon": "^2.0.20",
-    "webpack-dev-server": "^4.11.1"
+    "nodemon": "^2.0.20"
   }
 }
