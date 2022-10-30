@@ -1,21 +1,24 @@
 import '../config/config';
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import path from 'path';
-import connectDB from './db/conn';
+import {connectDB, disconnectDb} from './db/conn';
 import expressConfig from '../config/express.config';
 import AuthService from './services/auth/auth.service';
+import http from 'http';
 
 const PORT = process.env.PORT || 8000;
 const app = express();
+const httpServer = http.createServer(app);
 
 connectDB();
 
 app.use(cors());
 app.use(express.json());
+app.enable('trust proxy', true);
+app.set('trust proxy', 1);
 app.use(express.static('dist'));
 
 expressConfig.store = MongoStore.create({ mongoUrl: process.env.DB_URI });
@@ -27,6 +30,12 @@ app.use('*/js', express.static('dist'));
 app.use('*/txt', express.static('dist'));
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'dist/index.html')));
+
+const cleanUp = (signalType) => {
+  log('received signal', signalType);
+  disconnectDb();
+  process.exit(0);
+};
 
 // Routes
 app.post('/api/auth/register', async (req, res) => {
@@ -59,9 +68,10 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-mongoose.connection.once('open', () => {
-  console.log('Connected to MongoDB');
-  app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log('listening on port', PORT);
+
+  ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM'].forEach((signalType) => {
+    process.on(signalType, cleanUp.bind(null, signalType));
   });
 });
