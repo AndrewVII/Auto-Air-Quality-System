@@ -30,7 +30,7 @@ app.use('/static', express.static('dist'));
 app.use('*/js', express.static('dist'));
 app.use('*/txt', express.static('dist'));
 
-app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'dist/index.html')));
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
 
 const cleanUp = (signalType) => {
   log('received signal', signalType);
