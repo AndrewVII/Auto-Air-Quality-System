@@ -9,6 +9,7 @@ import expressConfig from '../config/express.config';
 import AuthService from './services/auth/auth.service';
 import http from 'http';
 
+const __dirname = new URL('.', import.meta.url).pathname;
 const PORT = process.env.PORT || 8000;
 const app = express();
 const httpServer = http.createServer(app);
