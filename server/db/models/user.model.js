@@ -18,6 +18,9 @@ const schema = {
   city: {
     type: String,
   },
+  model: {
+    type: String,
+  },
   indoorData: [{
     date: Date,
     data: [{

@@ -1,6 +1,9 @@
 import { Button, Card, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
+import { connect } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { setUserFromSession } from '../../actions/userActions';
 import { login, register } from '../../api';
 import colors from '../../colors';
 
@@ -40,8 +43,10 @@ const styles = createUseStyles({
   },
 });
 
-function Login() {
+function Login(props) {
   const classes = styles();
+  const { dispatch } = props;
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -49,22 +54,23 @@ function Login() {
 
   const attemptLogin = async () => {
     const response = await login(username, password);
-    console.log(response);
     if (response.error) {
       setError(response.error);
-    } else {
-      setError('');
+      return;
     }
-    console.log(response);
+    setError('');
+    dispatch(setUserFromSession());
   };
 
   const attemptRegister = async () => {
     const response = await register(username, password);
     if (response.error) {
       setError(response.error);
-    } else {
-      setError('');
+      return;
     }
+    setError('');
+    dispatch(setUserFromSession());
+    navigate('/user/preferences');
   };
 
   return (
@@ -89,4 +95,10 @@ function Login() {
   );
 }
 
-export default Login;
+function mapStateToProps(state) {
+  return {
+    user: state.user,
+  };
+}
+
+export default connect(mapStateToProps)(Login);

@@ -2,6 +2,25 @@ import bcrypt from 'bcrypt';
 import db from '../../db/models';
 
 class AuthService {
+  static async authorized(data, sessionId) {
+    try {
+      const session = await db.Session.model.findById(sessionId);
+      const existingUser = await db.User.model.findOne({ username: data.username });
+
+      if (existingUser) {
+        session.user = existingUser._id;
+        await session.save();
+        return true;
+      }
+
+      return false;
+
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
   static async register({ username, password }) {
     const existingUser = await db.User.model.findOne({ username });
     if (existingUser) {
@@ -16,12 +35,11 @@ class AuthService {
 
     return {
       username,
-      password: hashedPassword,
     };
   }
 
   static async login({ username, password }) {
-    const user = await db.User.model.findOne({ username }).select('+password');
+    const user = await db.User.model.findOne({ username }).select('password city indoorData model');
 
     if (!user?.password) return { error: 'Invalid username/password' };
 

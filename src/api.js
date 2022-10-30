@@ -32,3 +32,8 @@ export const register = async (username, password) => {
   const url = '/api/auth/register';
   return performRequest(axios.post(url, { params: { username, password } }));
 };
+
+export const getUserFromSession = async () => {
+  const url = '/api/user/from-session';
+  return performRequest(axios.get(url));
+};
