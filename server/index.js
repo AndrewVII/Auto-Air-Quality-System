@@ -33,7 +33,7 @@ app.use('*/txt', express.static('dist'));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
 
 const cleanUp = (signalType) => {
-  log('received signal', signalType);
+  console.log('received signal', signalType);
   disconnectDb();
   process.exit(0);
 };
