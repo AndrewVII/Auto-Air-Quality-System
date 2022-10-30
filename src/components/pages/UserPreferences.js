@@ -43,7 +43,7 @@ const styles = createUseStyles({
 
 const UserPreferences = (props) => {
   const classes = styles();
-  const { user } = props.user;
+  const { user, loaded } = props;
 
   const [model, setModel] = useState(user.model || '');
   const [city, setCity] = useState(user.city || '');
@@ -51,6 +51,10 @@ const UserPreferences = (props) => {
 
   const setPreferences = async () => {
     console.log(modelNumber, city);
+  }
+
+  if (!loaded) {
+    return (<></>);
   }
   
   return (
@@ -76,7 +80,8 @@ const UserPreferences = (props) => {
 
 function mapStateToProps(state) {
   return {
-    user: state.user,
+    user: state.user.user,
+    loaded: state.user.loaded,
   };
 }
 

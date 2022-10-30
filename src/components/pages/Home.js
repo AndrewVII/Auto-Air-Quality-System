@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
+import { connect } from 'react-redux';
+import { Navigate } from 'react-router';
 import { getAQHIFromGovernment, login } from '../../api';
 
 import colors from '../../colors';
@@ -23,8 +25,10 @@ const styles = createUseStyles({
   },
 });
 
-function Home() {
+function Home(props) {
   const classes = styles();
+
+  const { user, loaded } = props;
 
   const [city, setCity] = useState('');
   const [airQualityData, setAirQualityData] = useState([]);
@@ -54,21 +58,33 @@ function Home() {
     setAirQualityData(graphData);
   };
 
+  if (!loaded) {
+    return (<></>);
+  }
+
   return (
     <div className={classes.root}>
-      <div>
-        <input type="text" value={city} onChange={(e) => setCity(e.target.value)} />
-        <button type="submit" onClick={getData}>Get data for city</button>
-      </div>
-      <div>
-        {error && <div className={classes.error}>{error}</div>}
-        {location && !error && <AirQualityInfo airQualityData={airQualityData} location={location} />}
-      </div>
+      {(!user.city || !user.model)
+      ? <Navigate to="/user/preferences" />
+      : <div>
+        <div>
+          <input type="text" value={city} onChange={(e) => setCity(e.target.value)} />
+          <button type="submit" onClick={getData}>Get data for city</button>
+        </div>
+        <div>
+          {error && <div className={classes.error}>{error}</div>}
+          {location && !error && <AirQualityInfo airQualityData={airQualityData} location={location} />}
+        </div>
+      </div>}
     </div>
   );
 }
 
-Home.propTypes = {
-};
+function mapStateToProps(state) {
+  return {
+    user: state.user.user,
+    loaded: state.user.loaded,
+  };
+}
 
-export default Home;
+export default connect(mapStateToProps)(Home);

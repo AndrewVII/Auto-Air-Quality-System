@@ -2,7 +2,7 @@ import { Button, Card, TextField } from '@mui/material';
 import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import { setUserFromSession } from '../../actions/userActions';
 import { login, register } from '../../api';
 import colors from '../../colors';
@@ -45,7 +45,7 @@ const styles = createUseStyles({
 
 function Login(props) {
   const classes = styles();
-  const { dispatch } = props;
+  const { dispatch, user, loaded } = props;
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -73,9 +73,15 @@ function Login(props) {
     navigate('/user/preferences');
   };
 
+  if (!loaded) {
+    return (<></>);
+  }
+
   return (
     <div className={classes.root}>
-      <Card variant="outlined">
+      {user.username 
+      ? <Navigate to="/" />
+      : <Card variant="outlined">
         <div className={classes.container}>
           <h3>Login</h3>
           {error && <div className={classes.error}>{error}</div>}
@@ -90,14 +96,15 @@ function Login(props) {
         <div className={classes.registerButtonContainer}>
           <Button variant="outlined" color="primary" onClick={attemptRegister}>Register</Button>
         </div>
-      </Card>
+      </Card>}
     </div>
   );
 }
 
 function mapStateToProps(state) {
   return {
-    user: state.user,
+    user: state.user.user,
+    loaded: state.user.loaded,
   };
 }
 
