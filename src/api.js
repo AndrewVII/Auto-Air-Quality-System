@@ -9,7 +9,7 @@ const performRequest = async (requestPromise) => {
       return error.response.data;
     }
     if (error.response.status === 500) {
-      return { error: error.response.statusText };
+      return { error: error.response.statusText, message: error.response.data?.error };
     }
     if (error.response) {
       return error.response.data;
@@ -36,4 +36,9 @@ export const register = async (username, password) => {
 export const getUserFromSession = async () => {
   const url = '/api/user/from-session';
   return performRequest(axios.get(url));
+};
+
+export const updateUserPreferences = async (data) => {
+  const url = '/api/user/update-settings';
+  return performRequest(axios.post(url, { params: { data } }));
 };

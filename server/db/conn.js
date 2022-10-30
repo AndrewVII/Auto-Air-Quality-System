@@ -4,7 +4,7 @@ export const connectDB = async () => {
   mongoose.connect(process.env.DB_URI);
 
   mongoose.connection.on('error', err => {
-    logError(err);
+    console.log(err);
   });
 
   mongoose.connection.once('open', () => {

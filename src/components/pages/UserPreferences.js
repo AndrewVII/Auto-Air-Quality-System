@@ -1,9 +1,11 @@
 import { Button, Card, TextField } from '@mui/material';
-import React, {  useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router';
+import { updatePreferences } from '../../actions/userActions';
 import colors from '../../colors';
+import Header from './Header';
 
 const styles = createUseStyles({
   root: {
@@ -23,9 +25,9 @@ const styles = createUseStyles({
     flexDirection: 'column',
     alignItems: 'center',
   },
-  error: {
+  message: {
     marginBottom: '8px',
-    color: colors.error,
+    color: colors.success,
     fontSize: '16px',
   },
   inputContainer: {
@@ -39,44 +41,56 @@ const styles = createUseStyles({
     float: 'left',
     margin: '5px',
   },
-})
+});
 
-const UserPreferences = (props) => {
+function UserPreferences(props) {
   const classes = styles();
-  const { user, loaded } = props;
+  const { user, loaded, dispatch } = props;
 
-  const [model, setModel] = useState(user.model || '');
-  const [city, setCity] = useState(user.city || '');
-  const [error, setError] = useState('');
+  const [model, setModel] = useState('');
+  const [city, setCity] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const setPreferences = async () => {
-    console.log(modelNumber, city);
-  }
+    setLoading(true);
+    await dispatch(updatePreferences({ ...user, city, model }));
+    setMessage('Succesfully updated user');
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    setCity(user.city);
+    setModel(user.model);
+  }, [loaded]);
 
   if (!loaded) {
-    return (<></>);
+    return (undefined);
   }
-  
+
   return (
     <div className={classes.root}>
-      {!user.username 
-      ? <Navigate to="/login" />
-      : <Card variant="outlined">
-        <div className={classes.container}>
-          <h3>{user.username}'s preferences</h3>
-          {error && <div className={classes.error}>{error}</div>}
-          <div className={classes.inputContainer}>
-            <TextField value={model} onChange={(e) => setModel(e.target.value)} type="number" label="Model Number" variant="outlined" />
-          </div>
-          <TextField value={city} onChange={(e) => setCity(e.target.value)} label="City" variant="outlined" />
-        </div>
-        <div className={classes.submitButtonContainer}>
-          <Button variant="contained" color="primary" onClick={setPreferences}>Save</Button>
-        </div>
-      </Card>}
+      <Header />
+      {!user.username
+        ? <Navigate to="/login" />
+        : (
+          <Card variant="outlined">
+            <div className={classes.container}>
+              <h3>{user.username}'s Settings</h3>
+              {message && <div className={classes.message}>{message}</div>}
+              <div className={classes.inputContainer}>
+                <TextField value={model} onChange={(e) => setModel(e.target.value)} label="Model" variant="outlined" />
+              </div>
+              <TextField value={city} onChange={(e) => setCity(e.target.value)} label="City" variant="outlined" />
+            </div>
+            <div className={classes.submitButtonContainer}>
+              <Button disabled={loading} variant="contained" color="primary" onClick={setPreferences}>Save</Button>
+            </div>
+          </Card>
+        )}
     </div>
   );
-};
+}
 
 function mapStateToProps(state) {
   return {

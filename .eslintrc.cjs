@@ -2,7 +2,7 @@ module.exports = {
   parser: '@babel/eslint-parser',
   env: {
     browser: true,
-    es2021: true,
+    es2022: true,
     node: true,
   },
   extends: [
@@ -43,6 +43,7 @@ module.exports = {
     'no-param-reassign': 'off',
     'react/no-array-index-key': 'off',
     'react/require-default-props': 'off',
+    'react/prop-types': 'off',
   },
   globals: {
     ENVIRONMENT: true,

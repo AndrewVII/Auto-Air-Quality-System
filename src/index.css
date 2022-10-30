@@ -10,3 +10,8 @@ body {
 * {
   font-family: Helvetica;
 }
+
+a {
+  text-decoration: inherit;
+  color: inherit;
+}

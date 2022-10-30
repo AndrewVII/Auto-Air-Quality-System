@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router';
@@ -6,6 +6,8 @@ import { getAQHIFromGovernment, login } from '../../api';
 
 import colors from '../../colors';
 import AirQualityInfo from '../AirQualityInfo';
+import Spinner from '../Spinner';
+import Header from './Header';
 
 const styles = createUseStyles({
   root: {
@@ -29,20 +31,25 @@ function Home(props) {
   const classes = styles();
 
   const { user, loaded } = props;
+  const { city } = user;
 
-  const [city, setCity] = useState('');
+  const [loading, setLoading] = useState(false);
   const [airQualityData, setAirQualityData] = useState([]);
   const [location, setLocation] = useState('');
   const [error, setError] = useState('');
 
   const getData = async () => {
+    setError('');
+    setLoading(true);
+
     const data = await getAQHIFromGovernment(city);
     const { features } = data;
     if (!features.length) {
+      setLocation('Not available');
       setError(`${city} is not an available location.`);
+      setLoading(false);
       return;
     }
-    setError('');
     features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
 
     const graphData = features.map(feature => {
@@ -54,28 +61,38 @@ function Home(props) {
       };
     });
 
+    setLoading(false);
     setLocation(features[0].properties.location_name_en);
     setAirQualityData(graphData);
   };
 
-  if (!loaded) {
-    return (<></>);
+  if (loading || !loaded) {
+    return (
+      <div className={classes.root}>
+        <Header />
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (loaded && !loading && !location) {
+    getData();
   }
 
   return (
     <div className={classes.root}>
+      <Header />
       {(!user.city || !user.model)
-      ? <Navigate to="/user/preferences" />
-      : <div>
-        <div>
-          <input type="text" value={city} onChange={(e) => setCity(e.target.value)} />
-          <button type="submit" onClick={getData}>Get data for city</button>
-        </div>
-        <div>
-          {error && <div className={classes.error}>{error}</div>}
-          {location && !error && <AirQualityInfo airQualityData={airQualityData} location={location} />}
-        </div>
-      </div>}
+        ? <Navigate to="/user/preferences" />
+        : (
+          <div>
+            <div>
+              {error === ''
+                ? <AirQualityInfo airQualityData={airQualityData} location={location} />
+                : <div className={classes.error}>{error}</div>}
+            </div>
+          </div>
+        )}
     </div>
   );
 }

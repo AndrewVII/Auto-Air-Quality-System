@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { setUserFromSession } from '../../actions/userActions';
 import { login, register } from '../../api';
 import colors from '../../colors';
+import Header from './Header';
 
 const styles = createUseStyles({
   root: {
@@ -55,7 +56,7 @@ function Login(props) {
   const attemptLogin = async () => {
     const response = await login(username, password);
     if (response.error) {
-      setError(response.error);
+      setError(response.message);
       return;
     }
     setError('');
@@ -65,38 +66,41 @@ function Login(props) {
   const attemptRegister = async () => {
     const response = await register(username, password);
     if (response.error) {
-      setError(response.error);
+      setError(response.message);
       return;
     }
     setError('');
-    dispatch(setUserFromSession());
+    await dispatch(setUserFromSession());
     navigate('/user/preferences');
   };
 
   if (!loaded) {
-    return (<></>);
+    return (undefined);
   }
 
   return (
     <div className={classes.root}>
-      {user.username 
-      ? <Navigate to="/" />
-      : <Card variant="outlined">
-        <div className={classes.container}>
-          <h3>Login</h3>
-          {error && <div className={classes.error}>{error}</div>}
-          <div className={classes.inputContainer}>
-            <TextField value={username} onChange={(e) => setUsername(e.target.value)} label="Username" variant="outlined" />
-          </div>
-          <TextField value={password} onChange={(e) => setPassword(e.target.value)} type="password" label="Password" variant="outlined" />
-        </div>
-        <div className={classes.submitButtonContainer}>
-          <Button variant="contained" color="primary" onClick={attemptLogin}>Login</Button>
-        </div>
-        <div className={classes.registerButtonContainer}>
-          <Button variant="outlined" color="primary" onClick={attemptRegister}>Register</Button>
-        </div>
-      </Card>}
+      <Header />
+      {user.username
+        ? <Navigate to="/" />
+        : (
+          <Card variant="outlined">
+            <div className={classes.container}>
+              <h3>Login</h3>
+              {error && <div className={classes.error}>{error}</div>}
+              <div className={classes.inputContainer}>
+                <TextField value={username} onChange={(e) => setUsername(e.target.value)} label="Username" variant="outlined" />
+              </div>
+              <TextField value={password} onChange={(e) => setPassword(e.target.value)} type="password" label="Password" variant="outlined" />
+            </div>
+            <div className={classes.submitButtonContainer}>
+              <Button variant="contained" color="primary" onClick={attemptLogin}>Login</Button>
+            </div>
+            <div className={classes.registerButtonContainer}>
+              <Button variant="outlined" color="primary" onClick={attemptRegister}>Register</Button>
+            </div>
+          </Card>
+        )}
     </div>
   );
 }
