@@ -15,10 +15,15 @@ connectDB();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('dist'));
 
 expressConfig.store = MongoStore.create({ mongoUrl: process.env.DB_URI });
 const expressSession = session(expressConfig);
 app.use(expressSession);
+
+app.use('/static', express.static('dist'));
+app.use('*/js', express.static('dist'));
+app.use('*/txt', express.static('dist'));
 
 // Routes
 app.post('/api/auth/register', async (req, res) => {
