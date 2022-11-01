@@ -46,8 +46,7 @@
     "server": "nodemon --experimental-modules --es-module-specifier-resolution=node ./server/index.js",
     "start": "yarn run build && NODE_ENV=production DEBUG=tbg:* node --experimental-modules --es-module-specifier-resolution=node ./server/index.js",
     "build": "NODE_ENV=production webpack --config ./webpack.config.cjs --mode production",
-    "lint": "./node_modules/.bin/eslint \"**/*.js\" --ignore-pattern node_modules/ --ignore-pattern dist/ --fix",
-    "generate-tot-imgs": "NODE_ENV=development DEBUG=tbg:* node ./scripts/loadThisOrThatImages && yarn lint"
+    "lint": "./node_modules/.bin/eslint \"**/*.js\" --ignore-pattern node_modules/ --ignore-pattern dist/ --fix"
   },
   "eslintConfig": {
     "extends": [
