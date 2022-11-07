@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router';
-import { getAQHIFromGovernment, login } from '../../api';
+import { getAQHIFromGovernment } from '../../api';
 
 import colors from '../../colors';
+import connectSocket from '../../socketConnector';
 import AirQualityInfo from '../AirQualityInfo';
 import Spinner from '../Spinner';
 import Header from './Header';
@@ -77,6 +78,7 @@ function Home(props) {
 
   if (loaded && !loading && !location) {
     getData();
+    connectSocket();
   }
 
   return (

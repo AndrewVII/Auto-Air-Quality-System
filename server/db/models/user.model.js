@@ -21,13 +21,15 @@ const schema = {
   model: {
     type: String,
   },
-  indoorData: [{
-    date: Date,
-    data: [{
+  indoorData: [
+    {
       value: Number,
       recordedAt: Date,
-    }],
-  }],
+    },
+  ],
+  socketId: {
+    type: String,
+  },
 };
 
 const compiledSchema = new mongoose.Schema(

@@ -1,20 +1,27 @@
 import '../config/config';
-import express, { application } from 'express';
+import express from 'express';
 import cors from 'cors';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import path from 'path';
 import http from 'http';
+import { Server } from 'socket.io';
+import ios from 'socket.io-express-session';
+import { socket } from './socket';
 import { connectDB, disconnectDb } from './db/conn';
 import expressConfig from '../config/express.config';
 import AuthService from './services/auth/auth.service';
 import SessionService from './services/session.service';
 import UserService from './services/user.service';
+import { sendDataToUser } from './socket.helper';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const PORT = process.env.PORT || 8000;
 const app = express();
 const httpServer = http.createServer(app);
+
+// socket
+const io = new Server(httpServer);
 
 connectDB();
 
@@ -27,6 +34,7 @@ app.use(express.static('dist'));
 expressConfig.store = MongoStore.create({ mongoUrl: process.env.DB_URI });
 const expressSession = session(expressConfig);
 app.use(expressSession);
+io.use(ios(expressSession));
 
 app.use('/static', express.static('dist'));
 app.use('*/js', express.static('dist'));
@@ -41,11 +49,14 @@ app.all('*', async (req, res, next) => {
   next();
 });
 
-const cleanUp = (signalType) => {
-  console.log('received signal', signalType);
-  disconnectDb();
-  process.exit(0);
-};
+// attach user to socket object
+io.use(async (soc, next) => {
+  const user = await SessionService.getUserFromSession(soc.handshake.session.id);
+  soc.user = user;
+  next();
+});
+
+socket(io);
 
 // Routes
 app.post('/api/auth/register', async (req, res) => {
@@ -116,7 +127,21 @@ app.post('/api/user/update-settings', async (req, res) => {
     return;
   } catch (err) {
     console.log(err);
-    console.log('test');
+    res.status(500).send(err);
+  }
+});
+
+app.post('/api/user/air-quality-data', async (req, res) => {
+  console.log('POST /api/user/air-quality-data');
+  try {
+    const { data } = req.body.params;
+    const { model, value } = data;
+    await UserService.UpdateAirData(model, value);
+
+    res.status(200).send();
+    return;
+  } catch (err) {
+    console.log(err);
     res.status(500).send(err);
   }
 });
@@ -136,6 +161,12 @@ app.get('/api/user/from-session', async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+const cleanUp = (signalType) => {
+  console.log('received signal', signalType);
+  disconnectDb();
+  process.exit(0);
+};
 
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'index.html')));
 

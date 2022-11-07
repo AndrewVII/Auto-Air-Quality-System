@@ -1,5 +1,5 @@
 import { getUserFromSession, updateUserPreferences } from '../api';
-import { SET_USER } from './actionTypes';
+import { SET_USER, UPDATE_AIR_DATA } from './actionTypes';
 
 export const setUserFromSession = () => async (dispatch) => {
   const user = await getUserFromSession();
@@ -18,6 +18,14 @@ export const updatePreferences = (data) => async (dispatch) => {
   });
 };
 
+export const updateAirData = (payload) => async (dispatch) => {
+  dispatch({
+    type: UPDATE_AIR_DATA,
+    payload: { indoorData: payload },
+  });
+};
+
 export default {
   setUserFromSession,
+  updatePreferences,
 };

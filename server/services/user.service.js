@@ -1,4 +1,5 @@
 import db from '../db/models';
+import { sendDataToUser } from '../socket.helper';
 
 class UserService {
   static async updateProfile(userId, data) {
@@ -16,7 +17,29 @@ class UserService {
     await user.save();
 
     return { user };
-  };
+  }
+
+  static async UpdateAirData(model, value) {
+    if (!model) {
+      return { error: 'Need model' };
+    }
+
+    const user = await db.User.model.findOne({ model });
+    const currentTime = new Date();
+
+    user.indoorData = [...user.indoorData, {
+      value,
+      recordedAt: currentTime.toString(),
+    }];
+
+    console.log(user.indoorData);
+
+    await user.save();
+
+    sendDataToUser(user);
+
+    return { user };
+  }
 }
 
 export default UserService;
