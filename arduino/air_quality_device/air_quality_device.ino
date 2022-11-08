@@ -1,4 +1,5 @@
 #include <WiFiNINA.h>
+#include <ArduinoJson.h>
 #include "secrets.h"
 
 #define URL "auto-air-quality-system.herokuapp.com"
@@ -22,6 +23,9 @@ void loop() {
   // Create JSON string and send data to server
   String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(value) + "\"}}}";
   sendData(data);
+  DynamicJsonDocument response = logResponse();
+  String username = response["username"];
+  Serial.println(username);
   
   delay(SENSOR_READ_DELAY);
 }
@@ -42,15 +46,33 @@ void sendData(String body) {
     client.println();
     client.println(body);
     Serial.println("Sent!");
+  } else {
+    Serial.println("Could not connect to server.");
   }
-  printResponse();
 }
 
-void printResponse() {
+DynamicJsonDocument logResponse() {
+  String responseJsonStr = "";
+  bool beginParsing = false;
+
+  while(!client.available()); // This will wait for the response
   while (client.available()) {
     char c = client.read();
-    Serial.write(c);
+    if (c == '{' || beginParsing) {
+      beginParsing = true;
+      Serial.write(c);
+      responseJsonStr = responseJsonStr + c;
+    }
   }
+  DynamicJsonDocument responseJson(responseJsonStr.length()*100);
+  DeserializationError error = deserializeJson(responseJson, responseJsonStr);
+  if (error) {
+    Serial.println("Failed to deserialize JSON.");
+    Serial.println(error.f_str());
+  } else {
+    Serial.println("Successfully deserialized JSON!");
+  }
+  return responseJson;
 }
 
 // TODO: replace code in here with sensor data

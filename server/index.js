@@ -138,7 +138,7 @@ app.post('/api/user/air-quality-data', async (req, res) => {
     const { model, value } = data;
     const { user } = await UserService.UpdateAirData(model, value);
 
-    res.status(200).send(user);
+    res.status(200).send({ username: user.username });
     return;
   } catch (err) {
     console.log(err);
