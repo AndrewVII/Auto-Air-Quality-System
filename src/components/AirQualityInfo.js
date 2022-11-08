@@ -59,7 +59,7 @@ function AirQualityInfo({ airQualityData, location }) {
           <ReferenceArea y1={0} y2={4} label="Low Risk" fill={colors.lowRisk} />
           <ReferenceArea y1={4} y2={7} label="Moderate Risk" fill={colors.moderateRisk} />
           <ReferenceArea y1={7} y2={10} label="High Risk" fill={colors.highRisk} />
-          <Line type="monotone" dataKey="AQHI" stroke="#000" animationDuration={200} />
+          <Line type="monotone" dataKey="AQHI" stroke="#000" isAnimationActive={!!location} />
         </LineChart>
       </div>
       <div className={classes.additionalInfoContainer}>
