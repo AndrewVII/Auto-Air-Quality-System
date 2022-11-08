@@ -3,7 +3,7 @@
 #include "secrets.h"
 
 #define URL "auto-air-quality-system.herokuapp.com"
-#define MODEL "new_test" // The model ID of the Arduino; this is used to know which user to send the data to
+#define MODEL "andrew_test2" // The model ID of the Arduino; this is used to know which user to send the data to
 #define SENSOR_READ_DELAY 5000
 
 WiFiClient client;
@@ -18,14 +18,15 @@ void setup() {
 }
 
 void loop() {
-  int value = readAirQualitySensor();
+  float airQualityReading = readAirQualitySensor();
 
   // Create JSON string and send data to server
-  String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(value) + "\"}}}";
+  String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(airQualityReading) + "\"}}}";
   sendData(data);
-  DynamicJsonDocument response = logResponse();
+  DynamicJsonDocument response = getResponse();
   String username = response["username"];
-  Serial.println(username);
+  
+  // TODO: Display user and current air quality reading on LCD. If no user from response, then display "Model is not connected to a user."
   
   delay(SENSOR_READ_DELAY);
 }
@@ -51,7 +52,7 @@ void sendData(String body) {
   }
 }
 
-DynamicJsonDocument logResponse() {
+DynamicJsonDocument getResponse() {
   String responseJsonStr = "";
   bool beginParsing = false;
 
@@ -60,7 +61,6 @@ DynamicJsonDocument logResponse() {
     char c = client.read();
     if (c == '{' || beginParsing) {
       beginParsing = true;
-      Serial.write(c);
       responseJsonStr = responseJsonStr + c;
     }
   }
@@ -69,8 +69,6 @@ DynamicJsonDocument logResponse() {
   if (error) {
     Serial.println("Failed to deserialize JSON.");
     Serial.println(error.f_str());
-  } else {
-    Serial.println("Successfully deserialized JSON!");
   }
   return responseJson;
 }
