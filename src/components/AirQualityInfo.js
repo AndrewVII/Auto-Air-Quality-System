@@ -37,7 +37,7 @@ function AirQualityInfo({ airQualityData, location }) {
   return (
     <div className={classes.container}>
       <h1>
-        AQHI of {location}
+        {location ? `Today&apos;s AQHI of ${location}` : 'Indoor Air Quality Readings'}
       </h1>
       <div className={classes.graph}>
         <LineChart
@@ -49,10 +49,10 @@ function AirQualityInfo({ airQualityData, location }) {
           }}
         >
           <CartesianGrid strokeDasharray="0 0" />
-          <XAxis dataKey="date">
+          <XAxis dataKey="time">
             <Label value="Time" offset={-2} position="bottom" />
           </XAxis>
-          <YAxis type="number" domain={[0, 10]} tickCount={21}>
+          <YAxis type="number" dataKey="AQHI" domain={[0, 10]} tickCount={21}>
             <Label value="AQHI" offset={-2} position="insideLeft" />
           </YAxis>
           <Tooltip />
@@ -63,7 +63,7 @@ function AirQualityInfo({ airQualityData, location }) {
         </LineChart>
       </div>
       <div className={classes.additionalInfoContainer}>
-        Current AQHI (as of {airQualityData[airQualityData.length - 1].date}): {curAQHILevel}
+        Current AQHI (as of {airQualityData[airQualityData.length - 1].time}): {curAQHILevel}
       </div>
     </div>
   );

@@ -29,10 +29,8 @@ class UserService {
 
     user.indoorData = [...user.indoorData, {
       value,
-      recordedAt: currentTime.toString(),
+      recordedAt: currentTime,
     }];
-
-    console.log(user.indoorData);
 
     await user.save();
 

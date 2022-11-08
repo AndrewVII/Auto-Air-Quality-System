@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router';
 import { getAQHIFromGovernment } from '../../api';
 
 import colors from '../../colors';
+import { addLeadingZeroes } from '../../helpers';
 import connectSocket from '../../socketConnector';
 import AirQualityInfo from '../AirQualityInfo';
 import Spinner from '../Spinner';
@@ -32,12 +33,25 @@ function Home(props) {
   const classes = styles();
 
   const { user, loaded } = props;
-  const { city } = user;
+  const { city, indoorData } = user;
 
   const [loading, setLoading] = useState(false);
+  const [socketLoaded, setSocketLoaded] = useState(false);
   const [airQualityData, setAirQualityData] = useState([]);
+  const [indoorAirQualityData, setIndoorAirQualityData] = useState([]);
   const [location, setLocation] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setIndoorAirQualityData(indoorData?.map(dataPoint => {
+      const date = new Date(dataPoint.recordedAt);
+      const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}:${addLeadingZeroes(date.getSeconds(), 2)}`;
+      return {
+        time: timeFormatted,
+        AQHI: dataPoint.value,
+      };
+    }));
+  }, [user]);
 
   const getData = async () => {
     setError('');
@@ -53,11 +67,15 @@ function Home(props) {
     }
     features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
 
-    const graphData = features.map(feature => {
+    const graphData = features.filter(feature => {
       const date = new Date(feature.properties.observation_datetime);
-      const dateFormatted = `${date.getMonth() + 1}-${date.getDate()}, ${date.getHours()}H`;
+      const today = new Date();
+      return today.toDateString() === date.toDateString();
+    }).map(feature => {
+      const date = new Date(feature.properties.observation_datetime);
+      const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
       return {
-        date: dateFormatted,
+        time: timeFormatted,
         AQHI: feature.properties.aqhi,
       };
     });
@@ -78,7 +96,11 @@ function Home(props) {
 
   if (loaded && !loading && !location) {
     getData();
+  }
+
+  if (loaded && !socketLoaded) {
     connectSocket();
+    setSocketLoaded(true);
   }
 
   return (
@@ -92,6 +114,7 @@ function Home(props) {
               {error === ''
                 ? <AirQualityInfo airQualityData={airQualityData} location={location} />
                 : <div className={classes.error}>{error}</div>}
+              <AirQualityInfo airQualityData={indoorAirQualityData} />
             </div>
           </div>
         )}

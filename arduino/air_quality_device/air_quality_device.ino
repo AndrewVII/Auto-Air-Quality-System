@@ -1,7 +1,9 @@
 #include <WiFiNINA.h>
 #include "secrets.h"
 
-#define URL "auto-air-quality-system.herokuapp.com" // Change to real url
+#define URL "auto-air-quality-system.herokuapp.com"
+#define MODEL "new_test" // The model ID of the Arduino; this is used to know which user to send the data to
+#define SENSOR_READ_DELAY 5000
 
 WiFiClient client;
 
@@ -15,17 +17,13 @@ void setup() {
 }
 
 void loop() {
-  int value = 100;
-  String model = "Test2";
-  String data = "{\"params\": { \"data\": { \"model\": \"" + model + "\", \"value\": \"" + String(value) + "\"}}}";
-  sendData(data);
+  int value = readAirQualitySensor();
 
-  // Log response
-  while (client.available()) {
-    char c = client.read();
-    Serial.write(c);
-  }
-  delay(5000);
+  // Create JSON string and send data to server
+  String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(value) + "\"}}}";
+  sendData(data);
+  
+  delay(SENSOR_READ_DELAY);
 }
 
 void sendData(String body) {
@@ -45,4 +43,17 @@ void sendData(String body) {
     client.println(body);
     Serial.println("Sent!");
   }
+  printResponse();
+}
+
+void printResponse() {
+  while (client.available()) {
+    char c = client.read();
+    Serial.write(c);
+  }
+}
+
+// TODO: replace code in here with sensor data
+float readAirQualitySensor() {
+  return random(11);
 }
