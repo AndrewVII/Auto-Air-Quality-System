@@ -138,7 +138,9 @@ app.post('/api/user/air-quality-data', async (req, res) => {
     const { user } = await UserService.UpdateAirData(model, value);
     const curOutdoorAQHI = user.outdoorData[user.outdoorData.length - 1];
 
-    res.status(200).send({ username: user.username, timeRead: curOutdoorAQHI.time, value: curOutdoorAQHI.AQHI });
+    res.status(200).send({
+      username: user.username, timeRead: curOutdoorAQHI.time, value: curOutdoorAQHI.AQHI, city: user.city,
+    });
     return;
   } catch (err) {
     console.log(err);

@@ -83,7 +83,7 @@ DynamicJsonDocument getResponse()
     }
   }
   Serial.println(responseJsonStr);
-  DynamicJsonDocument responseJson(100000);
+  DynamicJsonDocument responseJson(1000);
   DeserializationError error = deserializeJson(responseJson, responseJsonStr);
   if (error)
   {
