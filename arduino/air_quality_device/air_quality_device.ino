@@ -28,8 +28,12 @@ void loop()
   sendData(data);
   DynamicJsonDocument response = getResponse();
   String username = response["username"];
+  String AQHITimeRead = response["timeRead"];
+  float AQHIValue = response["value"];
 
   Serial.println(username);
+  Serial.println(AQHITimeRead);
+  Serial.println(AQHIValue);
 
   // TODO: Display user and current air quality reading on LCD. If no user from response, then display "Model is not connected to a user."
 
@@ -78,7 +82,8 @@ DynamicJsonDocument getResponse()
       responseJsonStr = responseJsonStr + c;
     }
   }
-  DynamicJsonDocument responseJson(responseJsonStr.length() * 100);
+  Serial.println(responseJsonStr);
+  DynamicJsonDocument responseJson(100000);
   DeserializationError error = deserializeJson(responseJson, responseJsonStr);
   if (error)
   {
