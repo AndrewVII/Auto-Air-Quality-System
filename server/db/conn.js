@@ -10,8 +10,9 @@ export const connectDB = async () => {
   mongoose.connection.once('open', () => {
     console.log('successful connection to mongodb');
   });
-}; 
+};
+
 export const disconnectDb = () => {
   console.log('disconnecting mongoose');
   mongoose.disconnect();
-}
+};

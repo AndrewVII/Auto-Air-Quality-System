@@ -3,21 +3,24 @@
 #include "secrets.h"
 
 #define URL "auto-air-quality-system.herokuapp.com"
-#define MODEL "andrew_test2" // The model ID of the Arduino; this is used to know which user to send the data to
+#define MODEL "nov20" // The model ID of the Arduino; this is used to know which user to send the data to
 #define SENSOR_READ_DELAY 5000
 
 WiFiClient client;
 
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  while (!Serial) {
+  while (!Serial)
+  {
   }
   Serial.println("Connecting to WiFi...");
   WiFi.begin(WIFI_ID, WIFI_PASS);
   Serial.println("Connected!");
 }
 
-void loop() {
+void loop()
+{
   float airQualityReading = readAirQualitySensor();
 
   // Create JSON string and send data to server
@@ -25,17 +28,22 @@ void loop() {
   sendData(data);
   DynamicJsonDocument response = getResponse();
   String username = response["username"];
-  
+
+  Serial.println(username);
+
   // TODO: Display user and current air quality reading on LCD. If no user from response, then display "Model is not connected to a user."
-  
+
   delay(SENSOR_READ_DELAY);
 }
 
-void sendData(String body) {
-  if (WiFi.status() != WL_CONNECTED) {
+void sendData(String body)
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
     return;
   }
-  if (client.connect(URL, 80)) {
+  if (client.connect(URL, 80))
+  {
     Serial.println("Sending data to server...");
     client.println("POST /api/user/air-quality-data HTTP/1.0");
     client.println("Host: " + String(URL));
@@ -47,26 +55,33 @@ void sendData(String body) {
     client.println();
     client.println(body);
     Serial.println("Sent!");
-  } else {
+  }
+  else
+  {
     Serial.println("Could not connect to server.");
   }
 }
 
-DynamicJsonDocument getResponse() {
+DynamicJsonDocument getResponse()
+{
   String responseJsonStr = "";
   bool beginParsing = false;
 
-  while(!client.available()); // This will wait for the response
-  while (client.available()) {
+  while (!client.available())
+    ; // This will wait for the response
+  while (client.available())
+  {
     char c = client.read();
-    if (c == '{' || beginParsing) {
+    if (c == '{' || beginParsing)
+    {
       beginParsing = true;
       responseJsonStr = responseJsonStr + c;
     }
   }
-  DynamicJsonDocument responseJson(responseJsonStr.length()*100);
+  DynamicJsonDocument responseJson(responseJsonStr.length() * 100);
   DeserializationError error = deserializeJson(responseJson, responseJsonStr);
-  if (error) {
+  if (error)
+  {
     Serial.println("Failed to deserialize JSON.");
     Serial.println(error.f_str());
   }
@@ -74,6 +89,7 @@ DynamicJsonDocument getResponse() {
 }
 
 // TODO: replace code in here with sensor data
-float readAirQualitySensor() {
+float readAirQualitySensor()
+{
   return random(11);
 }

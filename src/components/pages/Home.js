@@ -35,12 +35,10 @@ function Home(props) {
   const { user, loaded } = props;
   const { city, indoorData } = user;
 
-  const [loading, setLoading] = useState(false);
   const [socketLoaded, setSocketLoaded] = useState(false);
   const [airQualityData, setAirQualityData] = useState([]);
   const [indoorAirQualityData, setIndoorAirQualityData] = useState([]);
   const [location, setLocation] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     setIndoorAirQualityData(indoorData?.map(dataPoint => {
@@ -51,51 +49,17 @@ function Home(props) {
         AQHI: dataPoint.value,
       };
     }));
+    setAirQualityData(user.outdoorData);
+    setLocation(city);
   }, [user]);
 
-  const getData = async () => {
-    setError('');
-    setLoading(true);
-
-    const data = await getAQHIFromGovernment(city);
-    const { features } = data;
-    if (!features.length) {
-      setLocation('Not available');
-      setError(`${city} is not an available location.`);
-      setLoading(false);
-      return;
-    }
-    features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
-
-    const graphData = features.filter(feature => {
-      const date = new Date(feature.properties.observation_datetime);
-      const today = new Date();
-      return today.toDateString() === date.toDateString();
-    }).map(feature => {
-      const date = new Date(feature.properties.observation_datetime);
-      const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
-      return {
-        time: timeFormatted,
-        AQHI: feature.properties.aqhi,
-      };
-    });
-
-    setLoading(false);
-    setLocation(features[0].properties.location_name_en);
-    setAirQualityData(graphData);
-  };
-
-  if (loading || !loaded) {
+  if (!loaded) {
     return (
       <div className={classes.root}>
         <Header />
         <Spinner />
       </div>
     );
-  }
-
-  if (loaded && !loading && !location) {
-    getData();
   }
 
   if (loaded && !socketLoaded) {
@@ -111,10 +75,8 @@ function Home(props) {
         : (
           <div>
             <div>
-              {error === ''
-                ? <AirQualityInfo airQualityData={airQualityData} location={location} />
-                : <div className={classes.error}>{error}</div>}
-              <AirQualityInfo airQualityData={indoorAirQualityData} />
+              <AirQualityInfo airQualityData={airQualityData} location={location} />
+              <AirQualityInfo airQualityData={indoorAirQualityData} isModelData />
             </div>
           </div>
         )}

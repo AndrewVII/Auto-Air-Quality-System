@@ -27,6 +27,15 @@ const schema = {
       recordedAt: Date,
     },
   ],
+  outdoorData: [
+    {
+      time: String,
+      AQHI: Number,
+    },
+  ],
+  outdoorDataLastRecorded: {
+    type: Date,
+  },
   socketId: {
     type: String,
   },

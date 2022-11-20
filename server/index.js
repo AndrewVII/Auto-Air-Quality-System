@@ -13,7 +13,6 @@ import expressConfig from '../config/express.config';
 import AuthService from './services/auth/auth.service';
 import SessionService from './services/session.service';
 import UserService from './services/user.service';
-import { sendDataToUser } from './socket.helper';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const PORT = process.env.PORT || 8000;
@@ -137,8 +136,9 @@ app.post('/api/user/air-quality-data', async (req, res) => {
     const { data } = req.body.params;
     const { model, value } = data;
     const { user } = await UserService.UpdateAirData(model, value);
+    const curOutdoorAQHI = user.outdoorData[user.outdoorData.length - 1];
 
-    res.status(200).send({ username: user.username });
+    res.status(200).send({ username: user.username, curOutdoorAQHI });
     return;
   } catch (err) {
     console.log(err);

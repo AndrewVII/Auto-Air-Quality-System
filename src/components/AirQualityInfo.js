@@ -21,8 +21,16 @@ const styles = createUseStyles({
   },
 });
 
-function AirQualityInfo({ airQualityData, location }) {
+function AirQualityInfo({ airQualityData, location, isModelData }) {
   const classes = styles();
+
+  if (!airQualityData.length && isModelData) {
+    return (
+      <div className={classes.container}>
+        No data from model! Perhaps the model has not been initialized, or the model you inputted is incorrect.
+      </div>
+    );
+  }
 
   if (!airQualityData.length) {
     return (
@@ -37,7 +45,7 @@ function AirQualityInfo({ airQualityData, location }) {
   return (
     <div className={classes.container}>
       <h1>
-        {location ? `Today&apos;s AQHI of ${location}` : 'Indoor Air Quality Readings'}
+        {!isModelData ? `Today's AQHI of ${location}` : "Today's indoor Air Quality Readings"}
       </h1>
       <div className={classes.graph}>
         <LineChart
@@ -72,6 +80,7 @@ function AirQualityInfo({ airQualityData, location }) {
 AirQualityInfo.propTypes = {
   location: PropTypes.string,
   airQualityData: PropTypes.array,
+  isModelData: PropTypes.bool,
 };
 
 export default AirQualityInfo;
