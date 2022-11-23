@@ -1,4 +1,5 @@
 import db from '../db/models';
+import { updateAQHIInfoOfUser } from './user.service';
 
 class SessionService {
   static async getUserFromSession(sessionId) {
@@ -11,9 +12,10 @@ class SessionService {
     }
     if (session && session.user) {
       await db.User.model.updateOne({ _id: session.user._id }, { lastOnline: Date.now() });
+      const user = await db.User.model.findById(session.user._id);
+      await updateAQHIInfoOfUser(user);
       return session.user;
     }
-    
     return null;
   }
 }

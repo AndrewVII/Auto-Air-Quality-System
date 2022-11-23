@@ -16,6 +16,8 @@ class UserService {
     user.city = city;
     user.model = model;
 
+    updateAQHIInfoOfUser(user, true);
+
     await user.save();
 
     return { user };
@@ -34,18 +36,7 @@ class UserService {
       recordedAt: currentTime,
     }];
 
-    const curDate = new Date();
-
-    if (user.outdoorDataLastRecorded) {
-      const dateDifference = (curDate - user.outdoorDataLastRecorded) / (1000 * 60);
-      if (dateDifference > 20) {
-        user.outdoorData = await getAQHIInfo(user.city);
-        user.outdoorDataLastRecorded = currentTime;
-      }
-    } else {
-      user.outdoorData = await getAQHIInfo(user.city);
-      user.outdoorDataLastRecorded = currentTime;
-    }
+    await updateAQHIInfoOfUser(user);
 
     await user.save();
 
@@ -55,23 +46,33 @@ class UserService {
   }
 }
 
-const getAQHIInfo = async (city) => {
-  console.log('reached');
+export const updateAQHIInfoOfUser = async (user, newCity = false) => {
+  const { city } = user;
   if (!city) {
     return null;
   }
+  const curDate = new Date();
+
+  if (user.outdoorDataLastRecorded && !newCity) {
+    const dateDifference = (curDate - user.outdoorDataLastRecorded) / (1000 * 60);
+    if (dateDifference < 20) {
+      return null;
+    }
+  }
+
+  user.outdoorDataLastRecorded = curDate;
+  user.outdoorDataPreviousCity = city;
+
   const data = await getAQHIFromGovernment(city);
   const { features } = data;
   if (!features?.length) {
+    user.outdoorData = [];
+    user.save();
     return null;
   }
   features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
 
-  const graphData = features.filter(feature => {
-    const date = new Date(feature.properties.observation_datetime);
-    const today = new Date();
-    return today.toDateString() === date.toDateString();
-  }).map(feature => {
+  const graphData = features.slice(-24).map(feature => {
     const date = new Date(feature.properties.observation_datetime);
     const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
     return {
@@ -80,7 +81,9 @@ const getAQHIInfo = async (city) => {
     };
   });
 
-  return graphData;
+  user.outdoorData = graphData;
+  user.save();
+  return user;
 };
 
 export default UserService;

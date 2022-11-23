@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { createUseStyles } from 'react-jss';
 import { connect } from 'react-redux';
 import { Navigate } from 'react-router';
-import { getAQHIFromGovernment } from '../../api';
 
 import colors from '../../colors';
 import { addLeadingZeroes } from '../../helpers';
@@ -36,7 +35,6 @@ function Home(props) {
   const { city, indoorData } = user;
 
   const [socketLoaded, setSocketLoaded] = useState(false);
-  const [airQualityData, setAirQualityData] = useState([]);
   const [indoorAirQualityData, setIndoorAirQualityData] = useState([]);
   const [location, setLocation] = useState('');
 
@@ -49,7 +47,6 @@ function Home(props) {
         AQHI: dataPoint.value,
       };
     }));
-    setAirQualityData(user.outdoorData);
     setLocation(city);
   }, [user]);
 
@@ -75,7 +72,8 @@ function Home(props) {
         : (
           <div>
             <div>
-              <AirQualityInfo airQualityData={airQualityData} location={location} />
+              <AirQualityInfo airQualityData={user.outdoorData} location={location} />
+              <br />
               <AirQualityInfo airQualityData={indoorAirQualityData} isModelData />
             </div>
           </div>

@@ -36,6 +36,9 @@ const schema = {
   outdoorDataLastRecorded: {
     type: Date,
   },
+  outdoorDataPreviousCity: {
+    type: String,
+  },
   socketId: {
     type: String,
   },

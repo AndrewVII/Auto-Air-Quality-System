@@ -1,2 +1,2 @@
-#define WIFI_ID "Fun Network"
-#define WIFI_PASS "andrewjialubase9115"
+#define WIFI_ID "abc"
+#define WIFI_PASS "test123"

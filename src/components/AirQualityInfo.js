@@ -17,7 +17,7 @@ const styles = createUseStyles({
     height: '100%',
   },
   additionalInfoContainer: {
-    marginTop: '20px',
+    marginTop: '5px',
   },
 });
 
@@ -32,20 +32,20 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
     );
   }
 
-  if (!airQualityData?.length) {
+  if (airQualityData?.length === 0) {
     return (
       <div>
-        Loading...
+        No data available for {location}!
       </div>
     );
   }
 
-  const curAQHILevel = airQualityData[airQualityData?.length - 1].AQHI;
+  const curAQHILevel = airQualityData[airQualityData.length - 1].AQHI;
 
   return (
     <div className={classes.container}>
       <h1>
-        {!isModelData ? `Today's AQHI of ${location}` : "Today's indoor Air Quality Readings"}
+        {!isModelData ? `last 24 hours of AQHI readings in ${location}` : "Today's indoor Air Quality Readings"}
       </h1>
       <div className={classes.graph}>
         <LineChart
@@ -71,7 +71,7 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
         </LineChart>
       </div>
       <div className={classes.additionalInfoContainer}>
-        Current AQHI (as of {airQualityData[airQualityData?.length - 1].time}): {curAQHILevel}
+        Current AQHI (as of {airQualityData[airQualityData.length - 1].time}): {curAQHILevel}
       </div>
     </div>
   );
