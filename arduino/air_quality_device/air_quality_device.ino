@@ -1,47 +1,58 @@
+#include <Nextion.h>
 #include <WiFiNINA.h>
 #include <ArduinoJson.h>
 #include "secrets.h"
 
 #define URL "auto-air-quality-system.herokuapp.com"
-#define MODEL "nov20" // The model ID of the Arduino; this is used to know which user to send the data to
+#define MODEL "funmodel1234" // The model ID of the Arduino; this is used to know which user to send the data to
 #define SENSOR_READ_DELAY 5000
+#define NUM_OF_PROGRESS_UPDATES 10
 
 WiFiClient client;
 
-void setup()
-{
+NexText cityDisplay = NexText(0, 5, "city");
+NexText usernameDisplay = NexText(0, 4, "username");
+NexText outsideAQHIDisplay = NexText(0, 8, "outdoorAQHI");
+NexText lastRecordedDisplay = NexText(0, 9, "lastRecorded");
+NexText indoorPM25Display = NexText(0, 10, "indoorPM25");
+NexProgressBar progressBarDisplay = NexProgressBar(0, 6, "progress");
+
+SoftwareSerial HMISerial(0, 1);  
+
+void setup() {
   Serial.begin(9600);
   while (!Serial)
   {
   }
+  nexInit();
   Serial.println("Connecting to WiFi...");
   WiFi.begin(WIFI_ID, WIFI_PASS);
   Serial.println("Connected!");
 }
 
-void loop()
-{
+void loop() {
   float airQualityReading = readAirQualitySensor();
 
   // Create JSON string and send data to server
   String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(airQualityReading) + "\"}}}";
   sendData(data);
+  // Parse response
   DynamicJsonDocument response = getResponse();
-  String username = response["username"];
-  String AQHITimeRead = response["timeRead"];
+  char *username = response["username"];
+  char *AQHITimeRead = response["timeRead"];
+  char *city = response["city"];
   float AQHIValue = response["value"];
 
   Serial.println(username);
   Serial.println(AQHITimeRead);
   Serial.println(AQHIValue);
 
-  // TODO: Display user and current air quality reading on LCD. If no user from response, then display "Model is not connected to a user."
+  sendDataToDisplay(city, username, airQualityReading, AQHITimeRead, AQHIValue);
 
-  delay(SENSOR_READ_DELAY);
+  waitForNextReading();
 }
 
-void sendData(String body)
-{
+void sendData(String body) {
   if (WiFi.status() != WL_CONNECTED)
   {
     return;
@@ -66,8 +77,7 @@ void sendData(String body)
   }
 }
 
-DynamicJsonDocument getResponse()
-{
+DynamicJsonDocument getResponse() {
   String responseJsonStr = "";
   bool beginParsing = false;
 
@@ -93,8 +103,29 @@ DynamicJsonDocument getResponse()
   return responseJson;
 }
 
+void sendDataToDisplay(char *city, char *username, float indoorPM25Reading, char *AQHITimeRead, float outdoorAQHIValue) {
+  String indoorPM25Str = String(indoorPM25Reading);
+  String outdoorAQHIStr = String(outdoorAQHIValue);
+
+  cityDisplay.setText(city);
+  usernameDisplay.setText(username);
+  indoorPM25Display.setText(indoorPM25Str.c_str());
+  lastRecordedDisplay.setText(AQHITimeRead);
+  outsideAQHIDisplay.setText(outdoorAQHIStr.c_str());
+}
+
 // TODO: replace code in here with sensor data
-float readAirQualitySensor()
-{
-  return random(2);
+float readAirQualitySensor() {
+  return random(1001) * 0.001;
+}
+
+void waitForNextReading() {
+  int timePerProgressUpdate = SENSOR_READ_DELAY / NUM_OF_PROGRESS_UPDATES;
+  for (int i = 0; i < NUM_OF_PROGRESS_UPDATES; i++) {
+    int progress = ((float(i) * timePerProgressUpdate) / SENSOR_READ_DELAY) * 100;
+    Serial.println(progress);
+    progressBarDisplay.setValue(progress);
+    delay(timePerProgressUpdate);
+  }
+  progressBarDisplay.setValue(100);
 }
