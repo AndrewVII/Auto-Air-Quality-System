@@ -62,7 +62,7 @@ const getAQHIInfo = async (city) => {
   }
   const data = await getAQHIFromGovernment(city);
   const { features } = data;
-  if (!features.length) {
+  if (!features?.length) {
     return null;
   }
   features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));

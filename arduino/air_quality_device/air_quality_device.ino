@@ -96,5 +96,5 @@ DynamicJsonDocument getResponse()
 // TODO: replace code in here with sensor data
 float readAirQualitySensor()
 {
-  return random(11);
+  return random(2);
 }

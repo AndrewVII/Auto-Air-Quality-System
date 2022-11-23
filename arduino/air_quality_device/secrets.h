@@ -1,2 +1,2 @@
-#define WIFI_ID "iPhone"
-#define WIFI_PASS "12345678"
+#define WIFI_ID "Fun Network"
+#define WIFI_PASS "andrewjialubase9115"

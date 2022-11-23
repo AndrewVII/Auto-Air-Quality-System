@@ -24,7 +24,7 @@ const styles = createUseStyles({
 function AirQualityInfo({ airQualityData, location, isModelData }) {
   const classes = styles();
 
-  if (!airQualityData.length && isModelData) {
+  if (!airQualityData?.length && isModelData) {
     return (
       <div className={classes.container}>
         No data from model! Perhaps the model has not been initialized, or the model you inputted is incorrect.
@@ -32,7 +32,7 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
     );
   }
 
-  if (!airQualityData.length) {
+  if (!airQualityData?.length) {
     return (
       <div>
         Loading...
@@ -40,7 +40,7 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
     );
   }
 
-  const curAQHILevel = airQualityData[airQualityData.length - 1].AQHI;
+  const curAQHILevel = airQualityData[airQualityData?.length - 1].AQHI;
 
   return (
     <div className={classes.container}>
@@ -71,7 +71,7 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
         </LineChart>
       </div>
       <div className={classes.additionalInfoContainer}>
-        Current AQHI (as of {airQualityData[airQualityData.length - 1].time}): {curAQHILevel}
+        Current AQHI (as of {airQualityData[airQualityData?.length - 1].time}): {curAQHILevel}
       </div>
     </div>
   );
