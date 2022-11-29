@@ -47,13 +47,13 @@ class UserService {
 }
 
 export const updateAQHIInfoOfUser = async (user, newCity = false) => {
-  const { city, indoorData } = user;
+  const { city, outdoorData } = user;
   if (!city) {
     return null;
   }
   const curDate = new Date();
 
-  if (user.outdoorDataLastRecorded && !newCity && indoorData.length > 0) {
+  if (user.outdoorDataLastRecorded && !newCity && outdoorData.length > 0) {
     const dateDifference = (curDate - user.outdoorDataLastRecorded) / (1000 * 60);
     if (dateDifference < 20) {
       return null;
@@ -72,17 +72,15 @@ export const updateAQHIInfoOfUser = async (user, newCity = false) => {
   }
   features.sort((a, b) => (Date.parse(a.properties.observation_datetime) - Date.parse(b.properties.observation_datetime)));
 
-  console.log(features.slice(-24));
-
-  const graphData = features.slice(-24)
-    .filter(feature => feature.location_name_en.toLowerCase() === city.toLowerCase()).map(feature => {
-      const date = new Date(feature.properties.observation_datetime).toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const graphData = features
+    .filter(feature => feature.properties.location_name_en.toLowerCase() === city.toLowerCase()).map(feature => {
+      const date = new Date(new Date(feature.properties.observation_datetime).toLocaleString('en-US', { timeZone: 'America/New_York' }));
       const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
       return {
         time: timeFormatted,
         AQHI: feature.properties.aqhi,
       };
-    });
+    }).slice(-24);
 
   user.outdoorData = graphData;
   user.save();

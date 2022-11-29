@@ -174,8 +174,8 @@ app.get('/*', (req, res) => res.sendFile(path.join(__dirname, '..', 'dist', 'ind
 
 httpServer.listen(PORT, () => {
   console.log('listening on port', PORT);
-
+  /*
   ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM'].forEach((signalType) => {
     process.on(signalType, cleanUp.bind(null, signalType));
-  });
+  }); */
 });
