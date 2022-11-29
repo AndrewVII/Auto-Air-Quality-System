@@ -39,6 +39,8 @@ app.use('/static', express.static('dist'));
 app.use('*/js', express.static('dist'));
 app.use('*/txt', express.static('dist'));
 
+app.use(express.bodyParser({ limit: '50mb' }));
+
 // attach user to req object
 app.all('*', async (req, res, next) => {
   console.log('Attaching user to req object...');
