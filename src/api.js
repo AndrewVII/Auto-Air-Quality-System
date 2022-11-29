@@ -18,7 +18,7 @@ const performRequest = async (requestPromise) => {
   }
 };
 
-export const getAQHIFromGovernment = async (location, limit = 100) => {
+export const getAQHIFromGovernment = async (location, limit = 500) => {
   const url = `https://api.weather.gc.ca/collections/aqhi-observations-realtime/items?limit=${limit}&startindex=0&location_name_en=${location}&f=json`;
   return performRequest(axios.get(url));
 };
