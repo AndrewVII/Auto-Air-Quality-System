@@ -1,10 +1,16 @@
+// On line 37 of NexConfig.h, must replace line with:
+// #include <SoftwareSerial.h>
+// extern SoftwareSerial HMISerial;
+// #define nexSerial HMISerial
+
 #include <Nextion.h>
 #include <WiFiNINA.h>
 #include <ArduinoJson.h>
+#include "Adafruit_PM25AQI.h"
 #include "secrets.h"
 
 #define URL "auto-air-quality-system.herokuapp.com"
-#define MODEL "funmodel1234" // The model ID of the Arduino; this is used to know which user to send the data to
+#define MODEL "St. Catherine" // The model ID of the Arduino; this is used to know which user to send the data to
 #define SENSOR_READ_DELAY 5000
 #define NUM_OF_PROGRESS_UPDATES 10
 
@@ -17,7 +23,10 @@ NexText lastRecordedDisplay = NexText(0, 9, "lastRecorded");
 NexText indoorPM25Display = NexText(0, 10, "indoorPM25");
 NexProgressBar progressBarDisplay = NexProgressBar(0, 6, "progress");
 
-SoftwareSerial HMISerial(0, 1);  
+Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
+
+SoftwareSerial HMISerial(0, 1);
+SoftwareSerial pmSerial(2, 3); 
 
 void setup() {
   Serial.begin(9600);
@@ -25,6 +34,13 @@ void setup() {
   {
   }
   nexInit();
+  pmSerial.begin(9600);
+  if (! aqi.begin_UART(&pmSerial)) {
+    Serial.println("Could not find PM 2.5 sensor!");
+    while (1) delay(10);
+  } else {
+    Serial.println("Found PM 2.5 sensor!");
+  }
   Serial.println("Connecting to WiFi...");
   WiFi.begin(WIFI_ID, WIFI_PASS);
   Serial.println("Connected!");
@@ -116,14 +132,21 @@ void sendDataToDisplay(char *city, char *username, float indoorPM25Reading, char
 
 // TODO: replace code in here with sensor data
 float readAirQualitySensor() {
-  return random(1001) * 0.001;
+  PM25_AQI_Data data;
+  pmSerial.listen();
+  while (! aqi.read(&data)) {
+    Serial.println("Could not read from AQI! waiting 100 ms...");
+    delay(100);
+  }
+  Serial.print("PM 2.5: ");
+  Serial.println(data.pm25_standard);
+  return data.pm25_standard;
 }
 
 void waitForNextReading() {
   int timePerProgressUpdate = SENSOR_READ_DELAY / NUM_OF_PROGRESS_UPDATES;
   for (int i = 0; i < NUM_OF_PROGRESS_UPDATES; i++) {
     int progress = ((float(i) * timePerProgressUpdate) / SENSOR_READ_DELAY) * 100;
-    Serial.println(progress);
     progressBarDisplay.setValue(progress);
     delay(timePerProgressUpdate);
   }
