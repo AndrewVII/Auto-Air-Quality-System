@@ -74,15 +74,15 @@ export const updateAQHIInfoOfUser = async (user, newCity = false) => {
 
   console.log(features.slice(-24));
 
-  const graphData = features.slice(-24).map(feature => {
-    const date = new Date(feature.properties.observation_datetime);
-    date.toLocaleString('en-US', { timeZone: 'America/New_York' });
-    const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
-    return {
-      time: timeFormatted,
-      AQHI: feature.properties.aqhi,
-    };
-  });
+  const graphData = features.slice(-24)
+    .filter(feature => feature.location_name_en.toLowerCase() === city.toLowerCase()).map(feature => {
+      const date = new Date(feature.properties.observation_datetime).toLocaleString('en-US', { timeZone: 'America/New_York' });
+      const timeFormatted = `${addLeadingZeroes(date.getHours(), 2)}:${addLeadingZeroes(date.getMinutes(), 2)}`;
+      return {
+        time: timeFormatted,
+        AQHI: feature.properties.aqhi,
+      };
+    });
 
   user.outdoorData = graphData;
   user.save();
