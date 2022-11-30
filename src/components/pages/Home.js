@@ -13,7 +13,6 @@ import Header from './Header';
 const styles = createUseStyles({
   root: {
     minHeight: '100vh',
-    overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: colors.backgroundColor,
@@ -74,7 +73,7 @@ function Home(props) {
             <div>
               <AirQualityInfo airQualityData={user.outdoorData} location={location} isModelData={false} />
               <br />
-              <AirQualityInfo airQualityData={indoorAirQualityData} isModelData />
+              <AirQualityInfo airQualityData={user.outdoorData} isModelData />
             </div>
           </div>
         )}

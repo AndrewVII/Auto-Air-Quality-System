@@ -45,7 +45,7 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
   return (
     <div className={classes.container}>
       <h1>
-        {!isModelData ? `last 24 hours of AQHI readings in ${location}` : "Today's indoor Air Quality Readings"}
+        {!isModelData ? `Last 24 Hours of AQHI Readings in ${location}` : "Today's indoor Air Quality Readings"}
       </h1>
       <div className={classes.graph}>
         <LineChart
