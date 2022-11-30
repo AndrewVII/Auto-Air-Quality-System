@@ -19,7 +19,7 @@
 #define MOTOR1_NEG 12
 #define MOTOR2_POS 11
 #define MOTOR2_NEG 10
-#define MOTOR_DELAY 60
+#define MOTOR_DELAY 30
 
 #define DHT_PIN 7
 #define DHT_TYPE 22
@@ -44,6 +44,8 @@ SoftwareSerial pmSerial(2, 3);
 
 bool isMotor1Engaged = false;
 bool isMotor2Engaged = false;
+
+int aqhiSim = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -74,6 +76,8 @@ void loop() {
   float temp = dht.readTemperature();
   float humidity = dht.readHumidity();
 
+  aqhiSim = (aqhiSim + 1) % 11;
+
   Serial.println("TEMP: " + String(temp) + ", HUMIDITY: " + String(humidity));
 
   // Create JSON string and send data to server
@@ -86,11 +90,9 @@ void loop() {
   char *city = response["city"];
   float AQHIValue = response["value"];
 
-  float randVal = random(11);
+  motorEngagement((float) aqhiSim);
 
-  motorEngagement(randVal);
-
-  sendDataToDisplay(city, username, airQualityReading, AQHITimeRead, AQHIValue, temp, humidity);
+  sendDataToDisplay(city, username, airQualityReading, AQHITimeRead, (float) aqhiSim, temp, humidity);
 
   waitForNextReading();
 }
