@@ -7,13 +7,14 @@ import { useNavigate } from 'react-router';
 const styles = createUseStyles({
   root: {
     width: '100%',
-    height: '5%',
+    height: '7%',
     display: 'grid',
     gridTemplateColumns: '1fr 1fr 1fr',
     position: 'fixed',
     left: 0,
     top: 0,
     textAlign: 'center',
+    backgroundColor: '#37C6FF',
   },
   userContainer: {
     justifySelf: 'end',

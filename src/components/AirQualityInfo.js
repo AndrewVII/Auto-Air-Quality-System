@@ -61,17 +61,17 @@ function AirQualityInfo({ airQualityData, location, isModelData }) {
             <Label value="Time" offset={-2} position="bottom" />
           </XAxis>
           <YAxis type="number" dataKey="AQHI" domain={[0, 10]} tickCount={21}>
-            <Label value="AQHI" offset={-2} position="insideLeft" />
+            <Label value={isModelData ? 'PM2.5' : 'AQHI'} offset={-2} position="insideLeft" />
           </YAxis>
           <Tooltip />
-          <ReferenceArea y1={0} y2={4} label="Low Risk" fill={colors.lowRisk} />
-          <ReferenceArea y1={4} y2={7} label="Moderate Risk" fill={colors.moderateRisk} />
-          <ReferenceArea y1={7} y2={10} label="High Risk" fill={colors.highRisk} />
+          {!isModelData && <ReferenceArea y1={0} y2={4} label="Low Risk" fill={colors.lowRisk} />}
+          {!isModelData && <ReferenceArea y1={4} y2={7} label="Moderate Risk" fill={colors.moderateRisk} />}
+          {!isModelData && <ReferenceArea y1={7} y2={10} label="High Risk" fill={colors.highRisk} />}
           <Line type="monotone" dataKey="AQHI" stroke="#000" isAnimationActive={!!location} />
         </LineChart>
       </div>
       <div className={classes.additionalInfoContainer}>
-        Current AQHI (as of {airQualityData[airQualityData.length - 1].time}): {curAQHILevel}
+        Current {isModelData ? 'PM2.5 levels' : 'AQHI'} (as of {airQualityData[airQualityData.length - 1].time}): {curAQHILevel}
       </div>
     </div>
   );

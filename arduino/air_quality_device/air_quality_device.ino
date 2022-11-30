@@ -8,11 +8,21 @@
 #include <ArduinoJson.h>
 #include "Adafruit_PM25AQI.h"
 #include "secrets.h"
+#include <DHT.h>
 
 #define URL "auto-air-quality-system.herokuapp.com"
 #define MODEL "St. Catherine" // The model ID of the Arduino; this is used to know which user to send the data to
 #define SENSOR_READ_DELAY 5000
 #define NUM_OF_PROGRESS_UPDATES 10
+
+#define MOTOR1_POS 13
+#define MOTOR1_NEG 12
+#define MOTOR2_POS 11
+#define MOTOR2_NEG 10
+#define MOTOR_DELAY 60
+
+#define DHT_PIN 7
+#define DHT_TYPE 22
 
 WiFiClient client;
 
@@ -21,12 +31,19 @@ NexText usernameDisplay = NexText(0, 4, "username");
 NexText outsideAQHIDisplay = NexText(0, 8, "outdoorAQHI");
 NexText lastRecordedDisplay = NexText(0, 9, "lastRecorded");
 NexText indoorPM25Display = NexText(0, 10, "indoorPM25");
+NexText tempDisplay = NexText(0, 10, "temp");
+NexText humidityDisplay = NexText(0, 11, "humidity");
 NexProgressBar progressBarDisplay = NexProgressBar(0, 6, "progress");
 
 Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
 
+DHT dht(DHT_PIN, DHT_TYPE);
+
 SoftwareSerial HMISerial(0, 1);
-SoftwareSerial pmSerial(2, 3); 
+SoftwareSerial pmSerial(2, 3);
+
+bool isMotor1Engaged = false;
+bool isMotor2Engaged = false;
 
 void setup() {
   Serial.begin(9600);
@@ -34,6 +51,7 @@ void setup() {
   {
   }
   nexInit();
+  dht.begin();
   pmSerial.begin(9600);
   if (! aqi.begin_UART(&pmSerial)) {
     Serial.println("Could not find PM 2.5 sensor!");
@@ -44,10 +62,19 @@ void setup() {
   Serial.println("Connecting to WiFi...");
   WiFi.begin(WIFI_ID, WIFI_PASS);
   Serial.println("Connected!");
+
+  pinMode(MOTOR1_POS, OUTPUT);
+  pinMode(MOTOR1_NEG, OUTPUT);
+  pinMode(MOTOR2_POS, OUTPUT);
+  pinMode(MOTOR2_NEG, OUTPUT);
 }
 
 void loop() {
   float airQualityReading = readAirQualitySensor();
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  Serial.println("TEMP: " + String(temp) + ", HUMIDITY: " + String(humidity));
 
   // Create JSON string and send data to server
   String data = "{\"params\": { \"data\": { \"model\": \"" + String(MODEL) + "\", \"value\": \"" + String(airQualityReading) + "\"}}}";
@@ -59,11 +86,11 @@ void loop() {
   char *city = response["city"];
   float AQHIValue = response["value"];
 
-  Serial.println(username);
-  Serial.println(AQHITimeRead);
-  Serial.println(AQHIValue);
+  float randVal = random(11);
 
-  sendDataToDisplay(city, username, airQualityReading, AQHITimeRead, AQHIValue);
+  motorEngagement(randVal);
+
+  sendDataToDisplay(city, username, airQualityReading, AQHITimeRead, AQHIValue, temp, humidity);
 
   waitForNextReading();
 }
@@ -119,15 +146,19 @@ DynamicJsonDocument getResponse() {
   return responseJson;
 }
 
-void sendDataToDisplay(char *city, char *username, float indoorPM25Reading, char *AQHITimeRead, float outdoorAQHIValue) {
+void sendDataToDisplay(char *city, char *username, float indoorPM25Reading, char *AQHITimeRead, float outdoorAQHIValue, float temp, float humidity) {
   String indoorPM25Str = String(indoorPM25Reading);
   String outdoorAQHIStr = String(outdoorAQHIValue);
+  String tempStr = "temp: " + String(temp) + " C";
+  String humidityStr = "h: " + String(humidity) + "\%";
 
   cityDisplay.setText(city);
   usernameDisplay.setText(username);
   indoorPM25Display.setText(indoorPM25Str.c_str());
   lastRecordedDisplay.setText(AQHITimeRead);
   outsideAQHIDisplay.setText(outdoorAQHIStr.c_str());
+  tempDisplay.setText(tempStr.c_str());
+  humidityDisplay.setText(humidityStr.c_str());
 }
 
 // TODO: replace code in here with sensor data
@@ -151,4 +182,44 @@ void waitForNextReading() {
     delay(timePerProgressUpdate);
   }
   progressBarDisplay.setValue(100);
+}
+
+void motorEngagement(float AQHI) {
+  if (AQHI < 4) {
+    isMotor1Engaged = disengageMotor(MOTOR1_POS, MOTOR1_NEG, isMotor1Engaged);
+    isMotor2Engaged = disengageMotor(MOTOR2_POS, MOTOR2_NEG, isMotor2Engaged);
+  } else if (AQHI < 7) {
+    isMotor1Engaged = engageMotor(MOTOR1_POS, MOTOR1_NEG, isMotor1Engaged);
+    isMotor2Engaged = disengageMotor(MOTOR2_POS, MOTOR2_NEG, isMotor2Engaged);
+  } else {
+    isMotor1Engaged = engageMotor(MOTOR1_POS, MOTOR1_NEG, isMotor1Engaged);
+    isMotor2Engaged = engageMotor(MOTOR2_POS, MOTOR2_NEG, isMotor2Engaged);
+  }
+  Serial.println("motor 1 status: " + String(isMotor1Engaged));
+  Serial.println("motor 2 status: " + String(isMotor2Engaged));
+  Serial.println("AQHI: " + String(AQHI));
+}
+
+bool engageMotor(int posPin, int negPin, bool isEngaged) {
+  if (isEngaged) {
+    return true;
+  }
+  digitalWrite(posPin, HIGH);
+  digitalWrite(negPin, LOW);
+  delay(MOTOR_DELAY);
+  digitalWrite(posPin, LOW);
+  digitalWrite(negPin, LOW);
+  return true;
+ }
+
+bool disengageMotor(int posPin, int negPin, bool isEngaged) {
+  if (!isEngaged) {
+    return false;
+  }
+  digitalWrite(posPin, LOW);
+  digitalWrite(negPin, HIGH);
+  delay(MOTOR_DELAY);
+  digitalWrite(posPin, LOW);
+  digitalWrite(negPin, LOW);
+  return false;
 }
