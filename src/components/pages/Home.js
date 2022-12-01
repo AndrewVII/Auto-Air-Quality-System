@@ -73,7 +73,7 @@ function Home(props) {
             <div>
               <AirQualityInfo airQualityData={user.outdoorData} location={location} isModelData={false} />
               <br />
-              <AirQualityInfo airQualityData={user.outdoorData} isModelData />
+              <AirQualityInfo airQualityData={indoorAirQualityData} isModelData />
             </div>
           </div>
         )}
